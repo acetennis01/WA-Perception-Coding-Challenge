@@ -38,7 +38,7 @@ for cnt in cnts:
     approx = cv.approxPolyDP(cnt, 0.02 * peri, True)
     x, y, w, h = cv.boundingRect(approx)
 
-    cv.circle(im_out, ((int)(x + w/2), (int)(y + h/2)), 20, (i, i, i), 6)
+    # cv.circle(im_out, ((int)(x + w/2), (int)(y + h/2)), 20, (i, i, i), 6)
 
     points.append(((int)(x + w/2), (int)(y + h/2)))
 
@@ -62,7 +62,7 @@ right_cones = []
 for i in range(len(points) - 1):
     slope = (points[i + 1][1] - points[i][1])/(points[i + 1][0] - points[i][0])
     # slope = y2 - y1 / x2 - x1
-    cv.line(im_out, points[i], points[i + 1], (i * 10, i * 10, i * 10), 5)
+    # cv.line(im_out, points[i], points[i + 1], (i * 10, i * 10, i * 10), 5)
     if (not (slope > -0.5 and slope < 0.5)):
         if (slope > 0):  # if slope is positive
 
@@ -89,14 +89,20 @@ left_cones = np.array(left_cones)
 h, w, channels = im_out.shape
 
 cv.line(im_out, (int(x-vx*w), int(y-vy*w)),
-        (int(x+vx*w), int(y+vy*w)), (255, 255, 255))
+        (int(x+vx*w), int(y+vy*w)), (0, 0, 255), 5)
 
+[vx, vy, x, y] = cv.fitLine(left_cones, cv.DIST_L2, 0, 0.01, 0.01)
+
+cv.line(im_out, (int(x-vx*w), int(y-vy*w)),
+        (int(x+vx*w), int(y+vy*w)), (0, 0, 255), 5)
 
 result = cv.bitwise_and(img, img, mask=mask)
 # cv.imshow('frame', img)
 # cv.imshow('mask', mask)
 # cv.imshow('result', result)
 # cv.imshow('blob', im_thick)
+
+cv.imwrite('answer.png', im_out)
 
 cv.imshow('out', im_out)
 

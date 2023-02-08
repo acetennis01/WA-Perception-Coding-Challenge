@@ -14,36 +14,37 @@ upper_red = np.array([100, 100, 255])
 
 mask = cv.inRange(img, lower_red, upper_red)
 
-# Merge channels
-# im_thresh = cv.merge((im_thresh, im_thresh, im_thresh))
+
 # Remove small noise
-im_thick = cv.medianBlur(mask, 13)
+im_thick = cv.medianBlur(mask, 17)
 # Connect components
-# im_thick = cv.erode(im_thick, np.ones((31, 31)))
-# Draw a white border around shape to avoid errors in blob finding
-# cv.rectangle(im_thick, (0, 0), img.shape[:2], (255, 255, 255), 10)
 
 # To find each blob and size of each
 im_out = img.copy()
 im_thick = ~cv.split(im_thick)[0]
 cnts, _ = cv.findContours(im_thick, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
 cnts = list(cnts)
+# print(len(cnts))
 
 
 cnts.sort(
     key=lambda p: max(cv.boundingRect(p)[2], cv.boundingRect(p)[3]), reverse=True
 )
+
+i = 10
+
+del cnts[0]
+
 for cnt in cnts:
     peri = cv.arcLength(cnt, True)
     approx = cv.approxPolyDP(cnt, 0.02 * peri, True)
     x, y, w, h = cv.boundingRect(approx)
-    cv.rectangle(im_out, (x, y), (x + w, y + h), (0, 255, 0), 5)
-    print('new one found')
-    print(type(cnt))
+    cv.rectangle(im_out, (x, y), (x + w, y + h), (i, i, i), 5)
+    i += 10
 
+print(len(cnts))
+# print(type(cnts))
 
-
-# mask = cv.inRange(hsv, lower_blue, upper_blue)
 
 # k = np.array(([0, 1, 0],
 #              [1, -4, 1],
@@ -69,7 +70,7 @@ result = cv.bitwise_and(img, img, mask=mask)
 cv.imshow('mask', mask)
 # cv.imshow('result', result)
 cv.imshow('blob', im_thick)
-# cv.imshow('out', im_out)
+cv.imshow('out', im_out)
 
 cv.waitKey(0)
 cv.destroyAllWindows()

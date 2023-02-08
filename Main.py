@@ -2,31 +2,31 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
+# input image
 img = cv.imread('Wisconsin Autonomous/red.png')
 
-
+# set the filters for the image
 lower_red = np.array([0, 0, 170])
 upper_red = np.array([100, 100, 255])
 
+# create the mask with the filter
 mask = cv.inRange(img, lower_red, upper_red)
 
-
-# Remove small noise
+# take out small disturbance
 im_thick = cv.medianBlur(mask, 17)
-# Connect components
 
-# To find each blob and size of each
+# get the lst of blobs
 im_out = img.copy()
 im_thick = ~cv.split(im_thick)[0]
 cnts, _ = cv.findContours(im_thick, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
 cnts = list(cnts)
-# print(len(cnts))
 
-
+# sort the list
 cnts.sort(
     key=lambda p: max(cv.boundingRect(p)[2], cv.boundingRect(p)[3]), reverse=True
 )
 
+# create a list with all the points
 i = 0
 
 del cnts[0]
@@ -44,21 +44,12 @@ for cnt in cnts:
 
     i += 10
 
-# for i in range(len(points)):
-#    #print(i)
-#    print(points[i])
-
 points.sort()
-
-# print(points)
-
-# for i in range(len(points)):
-#    print(i)
-#    print(points[i])
 
 left_cones = []
 right_cones = []
 
+# fill the left_cones and right_cones lists
 for i in range(len(points) - 1):
     slope = (points[i + 1][1] - points[i][1])/(points[i + 1][0] - points[i][0])
     # slope = y2 - y1 / x2 - x1
@@ -76,13 +67,10 @@ for i in range(len(points) - 1):
             if not (points[i + 1] in right_cones):
                 right_cones.append(points[i + 1])
 
-    # print(slope)
-
-print(len(right_cones))
-print(len(left_cones))
-
 right_cones = np.array(right_cones)
 left_cones = np.array(left_cones)
+
+# plot the left line
 
 [vx, vy, x, y] = cv.fitLine(right_cones, cv.DIST_L2, 0, 0.01, 0.01)
 
@@ -91,18 +79,15 @@ h, w, channels = im_out.shape
 cv.line(im_out, (int(x-vx*w), int(y-vy*w)),
         (int(x+vx*w), int(y+vy*w)), (0, 0, 255), 5)
 
+# plot the right line
+
 [vx, vy, x, y] = cv.fitLine(left_cones, cv.DIST_L2, 0, 0.01, 0.01)
 
 cv.line(im_out, (int(x-vx*w), int(y-vy*w)),
         (int(x+vx*w), int(y+vy*w)), (0, 0, 255), 5)
 
-result = cv.bitwise_and(img, img, mask=mask)
-# cv.imshow('frame', img)
-# cv.imshow('mask', mask)
-# cv.imshow('result', result)
-# cv.imshow('blob', im_thick)
-
-cv.imwrite('answer.png', im_out)
+# save the image in answer.png
+cv.imwrite('Wisconsin Autonomous/answer.png', im_out)
 
 cv.imshow('out', im_out)
 

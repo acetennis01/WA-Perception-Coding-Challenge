@@ -2,11 +2,7 @@ import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
 
-print(cv.__version__)
-
 img = cv.imread('Wisconsin Autonomous/red.png')
-
-hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
 
 lower_red = np.array([0, 0, 170])
@@ -31,45 +27,67 @@ cnts.sort(
     key=lambda p: max(cv.boundingRect(p)[2], cv.boundingRect(p)[3]), reverse=True
 )
 
-i = 10
+i = 0
 
 del cnts[0]
+
+points = []
 
 for cnt in cnts:
     peri = cv.arcLength(cnt, True)
     approx = cv.approxPolyDP(cnt, 0.02 * peri, True)
     x, y, w, h = cv.boundingRect(approx)
-    cv.rectangle(im_out, (x, y), (x + w, y + h), (i, i, i), 5)
+
+    cv.circle(im_out, ((int)(x + w/2), (int)(y + h/2)), 20, (i, i, i), 6)
+
+    points.append(((int)(x + w/2), (int)(y + h/2)))
+
     i += 10
 
-print(len(cnts))
-# print(type(cnts))
+# for i in range(len(points)):
+#    #print(i)
+#    print(points[i])
 
+points.sort()
 
-# k = np.array(([0, 1, 0],
-#              [1, -4, 1],
-#              [0, 1, 0]), np.float32)
-#
-#
-#
+# print(points)
 
-#
-# output = cv.filter2D(result, -1, k)
+# for i in range(len(points)):
+#    print(i)
+#    print(points[i])
 
-# plt.imshow(result)
-# plt.title('Plot with matplot')
+left_cones = []
+right_cones = []
 
-# plt.imshow(output)
-# plt.title('Result')
-#
-# plt.waitforbuttonpress(0)
-#
+for i in range(len(points) - 1):
+    slope = (points[i + 1][1] - points[i][1])/(points[i + 1][0] - points[i][0])
+    # slope = y2 - y1 / x2 - x1
+    cv.line(im_out, points[i], points[i + 1], (i * 10, i * 10, i * 10), 5)
+    if (not (slope > -0.5 and slope < 0.5)):
+        if (slope > 0):  # if slope is positive
+
+            if not (points[i] in left_cones):
+                left_cones.append(points[i])
+            if not (points[i + 1] in left_cones):
+                left_cones.append(points[i + 1])
+        elif (slope < 0):  # if slope is negative
+            if not (points[i] in right_cones):
+                right_cones.append(points[i])
+            if not (points[i + 1] in right_cones):
+                right_cones.append(points[i + 1])
+
+    # print(slope)
+
+print(len(right_cones))
+print(len(left_cones))
+
 
 result = cv.bitwise_and(img, img, mask=mask)
 # cv.imshow('frame', img)
-cv.imshow('mask', mask)
+# cv.imshow('mask', mask)
 # cv.imshow('result', result)
-cv.imshow('blob', im_thick)
+# cv.imshow('blob', im_thick)
+
 cv.imshow('out', im_out)
 
 cv.waitKey(0)

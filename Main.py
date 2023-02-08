@@ -81,6 +81,16 @@ for i in range(len(points) - 1):
 print(len(right_cones))
 print(len(left_cones))
 
+right_cones = np.array(right_cones)
+left_cones = np.array(left_cones)
+
+[vx, vy, x, y] = cv.fitLine(right_cones, cv.DIST_L2, 0, 0.01, 0.01)
+
+h, w, channels = im_out.shape
+
+cv.line(im_out, (int(x-vx*w), int(y-vy*w)),
+        (int(x+vx*w), int(y+vy*w)), (255, 255, 255))
+
 
 result = cv.bitwise_and(img, img, mask=mask)
 # cv.imshow('frame', img)
